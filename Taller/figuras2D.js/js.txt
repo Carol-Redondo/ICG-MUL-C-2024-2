@@ -1,0 +1,100 @@
+function actualizarFormulario() {
+    const figura = document.getElementById('figura').value;
+    const coordenadas = document.getElementById('coordenadas').value;
+    const opcionesPoligono = document.getElementById('opcionesPoligono');
+    const coordenadasCartesiano = document.getElementById('coordenadasCartesiano');
+    const coordenadasPolar = document.getElementById('coordenadasPolar');
+
+    if (figura === 'poligono') {
+        opcionesPoligono.classList.remove('hidden');
+    } else {
+        opcionesPoligono.classList.add('hidden');
+    }
+
+    if (coordenadas === 'polar') {
+        coordenadasCartesiano.classList.add('hidden');
+        coordenadasPolar.classList.remove('hidden');
+    } else {
+        coordenadasCartesiano.classList.remove('hidden');
+        coordenadasPolar.classList.add('hidden');
+    }
+}
+
+function dibujarFigura() {
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const figura = document.getElementById('figura').value;
+    const tamano = parseFloat(document.getElementById('tamano').value);
+    const color = document.getElementById('color').value;
+    const bordeColor = document.getElementById('bordeColor').value;
+
+    // Sistema de coordenadas
+    const coordenadas = document.getElementById('coordenadas').value;
+    let centroX, centroY;
+
+    if (coordenadas === 'polar') {
+        const angulo = parseFloat(document.getElementById('angulo').value) * Math.PI / 180;
+        const radio = parseFloat(document.getElementById('radio').value);
+        centroX = radio * Math.cos(angulo) + canvas.width / 2;
+        centroY = radio * Math.sin(angulo) + canvas.height / 2;
+    } else {
+        centroX = parseFloat(document.getElementById('centroX').value);
+        centroY = parseFloat(document.getElementById('centroY').value);
+    }
+
+    // Obtener el número de lados si es un polígono
+    const lados = parseInt(document.getElementById('lados').value) || 0;
+
+    // Limpiar el canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Establecer color de relleno
+    ctx.fillStyle = color;
+    // Establecer color del borde
+    ctx.strokeStyle = bordeColor;
+
+    ctx.beginPath();
+    switch (figura) {
+        case 'circulo':
+            ctx.arc(centroX, centroY, tamano, 0, 2 * Math.PI);
+            ctx.fill(); // Rellenar el círculo
+            ctx.stroke(); // Dibujar el borde del círculo
+            break;
+        case 'cuadrado':
+            ctx.rect(centroX - tamano / 2, centroY - tamano / 2, tamano, tamano);
+            ctx.fill(); // Rellenar el cuadrado
+            ctx.stroke(); // Dibujar el borde del cuadrado
+            break;
+        case 'triangulo':
+            const altura = (Math.sqrt(3) / 2) * tamano;
+            ctx.moveTo(centroX, centroY - altura / 2);
+            ctx.lineTo(centroX - tamano / 2, centroY + altura / 2);
+            ctx.lineTo(centroX + tamano / 2, centroY + altura / 2);
+            ctx.closePath();
+            ctx.fill(); // Rellenar el triángulo
+            ctx.stroke(); // Dibujar el borde del triángulo
+            break;
+        case 'poligono':
+            if (lados >= 3) { // Asegurarse de que hay al menos 3 lados
+                const angulo = (2 * Math.PI) / lados;
+                ctx.moveTo(
+                    centroX + tamano * Math.cos(0),
+                    centroY + tamano * Math.sin(0)
+                );
+
+                for (let i = 1; i <= lados; i++) {
+                    ctx.lineTo(
+                        centroX + tamano * Math.cos(i * angulo),
+                        centroY + tamano * Math.sin(i * angulo)
+                    );
+                }
+                ctx.closePath();
+                ctx.fill(); // Rellenar el polígono
+                ctx.stroke(); // Dibujar el borde del polígono
+            }
+            break;
+    }
+}
+
+// Inicializar formulario
+actualizarFormulario();
