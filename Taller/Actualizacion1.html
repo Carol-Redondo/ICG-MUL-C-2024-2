@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dibujar Figuras Geométricas</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dibujar Figuras Geométricas</h1>
+
+    <!-- Formulario para ingresar el nombre -->
+    <form id="nombreForm">
+        <label for="nombre">Ingresa tu nombre:</label>
+        <input type="text" id="nombre" name="nombre" required>
+        <button type="button" onclick="guardarNombre()">Guardar Nombre</button>
+    </form>
+
+    <!-- Saludo personalizado -->
+    <h2 id="saludo" class="hidden"></h2>
+
+    <!-- Formulario para dibujar figuras -->
+    <form id="figuraForm" class="hidden">
+        <label for="figura">Elige una figura:</label>
+        <select id="figura" name="figura" onchange="actualizarFormulario()">
+            <option value="circulo">Círculo</option>
+            <option value="cuadrado">Cuadrado</option>
+            <option value="triangulo">Triángulo</option>
+            <option value="poligono">Polígono</option>
+        </select><br><br>
+
+        <label for="coordenadas">Sistema de Coordenadas:</label>
+        <select id="coordenadas" name="coordenadas" onchange="actualizarFormulario()">
+            <option value="cartesiano">Cartesiano</option>
+            <option value="polar">Polar</option>
+        </select><br><br>
+
+        <div id="coordenadasCartesiano">
+            <label for="centroX">Centro X:</label>
+            <input type="number" id="centroX" name="centroX" step="any" required><br><br>
+
+            <label for="centroY">Centro Y:</label>
+            <input type="number" id="centroY" name="centroY" step="any" required><br><br>
+        </div>
+
+        <div id="coordenadasPolar" class="hidden">
+            <label for="angulo">Ángulo (en grados):</label>
+            <input type="number" id="angulo" name="angulo" step="any" required><br><br>
+
+            <label for="radio">Radio:</label>
+            <input type="number" id="radio" name="radio" step="any" required><br><br>
+        </div>
+
+        <label for="tamano">Tamaño (Ancho o Largo):</label>
+        <input type="number" id="tamano" name="tamano" step="any" required><br><br>
+
+        <label for="color">Color de Relleno:</label>
+        <input type="color" id="color" name="color" value="#000000"><br><br>
+
+        <label for="bordeColor">Color del Borde:</label>
+        <input type="color" id="bordeColor" name="bordeColor" value="#000000"><br><br>
+
+        <div id="opcionesPoligono" class="hidden">
+            <label for="lados">Número de Lados:</label>
+            <input type="number" id="lados" name="lados" min="3" step="1" required><br><br>
+        </div>
+
+        <button type="button" onclick="dibujarFigura()">Dibujar Figura</button>
+    </form>
+
+    <br>
+    <canvas id="canvas" width="600" height="400"></canvas>
+
+    <script>
+        // Función para guardar y mostrar el nombre del usuario
+        function guardarNombre() {
+            const nombre = document.getElementById('nombre').value;
+            if (nombre) {
+                const saludo = document.getElementById('saludo');
+                saludo.textContent = `Hola, ${nombre}! Bienvenido/a.`;
+                saludo.classList.remove('hidden');
+
+                // Mostrar el formulario de figuras después de guardar el nombre
+                document.getElementById('figuraForm').classList.remove('hidden');
+                document.getElementById('nombreForm').classList.add('hidden');
+            }
+        }
+
+        function actualizarFormulario() {
+            const figura = document.getElementById('figura').value;
+            const coordenadas = document.getElementById('coordenadas').value;
+            const opcionesPoligono = document.getElementById('opcionesPoligono');
+            const coordenadasCartesiano = document.getElementById('coordenadasCartesiano');
+            const coordenadasPolar = document.getElementById('coordenadasPolar');
+
+            if (figura === 'poligono') {
+                opcionesPoligono.classList.remove('hidden');
+            } else {
+                opcionesPoligono.classList.add('hidden');
+            }
+
+            if (coordenadas === 'polar') {
+                coordenadasCartesiano.classList.add('hidden');
+                coordenadasPolar.classList.remove('hidden');
+            } else {
+                coordenadasCartesiano.classList.remove('hidden');
+                coordenadasPolar.classList.add('hidden');
+            }
+        }
+
+        function dibujarFigura() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const figura = document.getElementById('figura').value;
+            const tamano = parseFloat(document.getElementById('tamano').value);
+            const color = document.getElementById('color').value;
+            const bordeColor = document.getElementById('bordeColor').value;
+
+            // Sistema de coordenadas
+            const coordenadas = document.getElementById('coordenadas').value;
+            let centroX, centroY;
+
+            if (coordenadas === 'polar') {
+                const angulo = parseFloat(document.getElementById('angulo').value) * Math.PI / 180;
+                const radio = parseFloat(document.getElementById('radio').value);
+                centroX = radio * Math.cos(angulo) + canvas.width / 2;
+                centroY = radio * Math.sin(angulo) + canvas.height / 2;
+            } else {
+                centroX = parseFloat(document.getElementById('centroX').value);
+                centroY = parseFloat(document.getElementById('centroY').value);
+            }
+
+            // Obtener el número de lados si es un polígono
+            const lados = parseInt(document.getElementById('lados').value) || 0;
+
+            // Limpiar el canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Establecer color de relleno
+            ctx.fillStyle = color;
+            // Establecer color del borde
+            ctx.strokeStyle = bordeColor;
+
+            ctx.beginPath();
+            switch (figura) {
+                case 'circulo':
+                    ctx.arc(centroX, centroY, tamano, 0, 2 * Math.PI);
+                    ctx.fill(); // Rellenar el círculo
+                    ctx.stroke(); // Dibujar el borde del círculo
+                    break;
+                case 'cuadrado':
+                    ctx.rect(centroX - tamano / 2, centroY - tamano / 2, tamano, tamano);
+                    ctx.fill(); // Rellenar el cuadrado
+                    ctx.stroke(); // Dibujar el borde del cuadrado
+                    break;
+                case 'triangulo':
+                    const altura = (Math.sqrt(3) / 2) * tamano;
+                    ctx.moveTo(centroX, centroY - altura / 2);
+                    ctx.lineTo(centroX - tamano / 2, centroY + altura / 2);
+                    ctx.lineTo(centroX + tamano / 2, centroY + altura / 2);
+                    ctx.closePath();
+                    ctx.fill(); // Rellenar el triángulo
+                    ctx.stroke(); // Dibujar el borde del triángulo
+                    break;
+                case 'poligono':
+                    if (lados >= 3) { // Asegurarse de que hay al menos  3 lados
+                        const angulo = (2 * Math.PI) / lados;
+                        ctx.moveTo(
+                            centroX + tamano * Math.cos(0),
+                            centroY + tamano * Math.sin(0)
+                        );
+
+                        for (let i = 1; i <= lados; i++) {
+                            ctx.lineTo(
+                                centroX + tamano * Math.cos(i * angulo),
+                                centroY + tamano * Math.sin(i * angulo)
+                            );
+                        }
+                        ctx.closePath();
+                        ctx.fill(); // Rellenar el polígono
+                        ctx.stroke(); // Dibujar el borde del polígono
+                    }
+                    break;
+            }
+        }
+
+        // Inicializar formulario
+        actualizarFormulario();
+    </script>
+</body>
+</html
