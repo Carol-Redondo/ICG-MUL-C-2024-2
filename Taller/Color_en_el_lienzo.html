@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dibujar Figuras Geométricas</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+        .hidden {
+            display: none;
+        }
+        .figura-item {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dibujar Figuras Geométricas</h1>
+
+    <!-- Formulario para ingresar el nombre -->
+    <form id="nombreForm">
+        <label for="nombre">Ingresa tu nombre:</label>
+        <input type="text" id="nombre" name="nombre" required>
+        <button type="button" onclick="guardarNombre()">Guardar Nombre</button>
+    </form>
+
+    <!-- Saludo personalizado -->
+    <h2 id="saludo" class="hidden"></h2>
+
+    <!-- Formulario para agregar figuras -->
+    <form id="figuraForm" class="hidden">
+        <label for="fondoColor">Color de Fondo del Lienzo:</label>
+        <input type="color" id="fondoColor" name="fondoColor" value="#ffffff"><br><br>
+
+        <div id="figuraContainer">
+            <!-- Espacio para agregar múltiples figuras -->
+        </div>
+
+        <button type="button" onclick="agregarFigura()">Agregar Figura</button>
+        <button type="button" onclick="dibujarFiguras()">Dibujar Figuras</button>
+    </form>
+
+    <br>
+    <canvas id="canvas" width="600" height="400"></canvas>
+
+    <script>
+        // Función para guardar y mostrar el nombre del usuario
+        function guardarNombre() {
+            const nombre = document.getElementById('nombre').value;
+            if (nombre) {
+                const saludo = document.getElementById('saludo');
+                saludo.textContent = `Hola, ${nombre}! Bienvenido/a.`;
+                saludo.classList.remove('hidden');
+
+                // Mostrar el formulario de figuras después de guardar el nombre
+                document.getElementById('figuraForm').classList.remove('hidden');
+                document.getElementById('nombreForm').classList.add('hidden');
+            }
+        }
+
+        function agregarFigura() {
+            const container = document.getElementById('figuraContainer');
+            const figuraId = `figura_${Date.now()}`;
+            
+            // Crear un nuevo bloque para una figura
+            const figuraDiv = document.createElement('div');
+            figuraDiv.classList.add('figura-item');
+            figuraDiv.innerHTML = `
+                <h3>Figura ${container.children.length + 1}</h3>
+                <label for="${figuraId}_tipo">Elige una figura:</label>
+                <select id="${figuraId}_tipo" name="figuraTipo">
+                    <option value="circulo">Círculo</option>
+                    <option value="cuadrado">Cuadrado</option>
+                    <option value="triangulo">Triángulo</option>
+                    <option value="poligono">Polígono</option>
+                </select><br><br>
+
+                <label for="${figuraId}_coordenadas">Sistema de Coordenadas:</label>
+                <select id="${figuraId}_coordenadas" name="coordenadas">
+                    <option value="cartesiano">Cartesiano</option>
+                    <option value="polar">Polar</option>
+                </select><br><br>
+
+                <div id="${figuraId}_coordenadasCartesiano">
+                    <label for="${figuraId}_centroX">Centro X:</label>
+                    <input type="number" id="${figuraId}_centroX" name="centroX" step="any" required><br><br>
+
+                    <label for="${figuraId}_centroY">Centro Y:</label>
+                    <input type="number" id="${figuraId}_centroY" name="centroY" step="any" required><br><br>
+                </div>
+
+                <div id="${figuraId}_coordenadasPolar" class="hidden">
+                    <label for="${figuraId}_angulo">Ángulo (en grados):</label>
+                    <input type="number" id="${figuraId}_angulo" name="angulo" step="any" required><br><br>
+
+                    <label for="${figuraId}_radio">Radio:</label>
+                    <input type="number" id="${figuraId}_radio" name="radio" step="any" required><br><br>
+                </div>
+
+                <label for="${figuraId}_tamano">Tamaño (Ancho o Largo):</label>
+                <input type="number" id="${figuraId}_tamano" name="tamano" step="any" required><br><br>
+
+                <label for="${figuraId}_color">Color de Relleno:</label>
+                <input type="color" id="${figuraId}_color" name="color" value="#000000"><br><br>
+
+                <label for="${figuraId}_bordeColor">Color del Borde:</label>
+                <input type="color" id="${figuraId}_bordeColor" name="bordeColor" value="#000000"><br><br>
+
+                <div id="${figuraId}_opcionesPoligono" class="hidden">
+                    <label for="${figuraId}_lados">Número de Lados:</label>
+                    <input type="number" id="${figuraId}_lados" name="lados" min="3" step="1" required><br><br>
+                </div>
+            `;
+            
+            // Agregar el nuevo bloque al contenedor
+            container.appendChild(figuraDiv);
+
+            // Añadir eventos para mostrar/ocultar campos según la figura seleccionada
+            document.getElementById(`${figuraId}_tipo`).addEventListener('change', function() {
+                actualizarFormulario(figuraId);
+            });
+            document.getElementById(`${figuraId}_coordenadas`).addEventListener('change', function() {
+                actualizarFormulario(figuraId);
+            });
+        }
+
+        function actualizarFormulario(figuraId) {
+            const tipoFigura = document.getElementById(`${figuraId}_tipo`).value;
+            const coordenadas = document.getElementById(`${figuraId}_coordenadas`).value;
+            const opcionesPoligono = document.getElementById(`${figuraId}_opcionesPoligono`);
+            const coordenadasCartesiano = document.getElementById(`${figuraId}_coordenadasCartesiano`);
+            const coordenadasPolar = document.getElementById(`${figuraId}_coordenadasPolar`);
+
+            if (tipoFigura === 'poligono') {
+                opcionesPoligono.classList.remove('hidden');
+            } else {
+                opcionesPoligono.classList.add('hidden');
+            }
+
+            if (coordenadas === 'polar') {
+                coordenadasCartesiano.classList.add('hidden');
+                coordenadasPolar.classList.remove('hidden');
+            } else {
+                coordenadasCartesiano.classList.remove('hidden');
+                coordenadasPolar.classList.add('hidden');
+            }
+        }
+
+        function dibujarFiguras() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Obtener el color de fondo del formulario
+            const fondoColor = document.getElementById('fondoColor').value;
+
+            // Aplicar el color de fondo al lienzo
+            ctx.fillStyle = fondoColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Obtener todos los bloques de figuras
+            const figuraItems = document.querySelectorAll('.figura-item');
+
+            figuraItems.forEach(item => {
+                const tipoFigura = item.querySelector('[name="figuraTipo"]').value;
+                const tamano = parseFloat(item.querySelector('[name="tamano"]').value);
+                const color = item.querySelector('[name="color"]').value;
+                const bordeColor = item.querySelector('[name="bordeColor"]').value;
+                const coordenadas = item.querySelector('[name="coordenadas"]').value;
+
+                let centroX, centroY;
+
+                if (coordenadas === 'polar') {
+                    const angulo = parseFloat(item.querySelector('[name="angulo"]').value) * Math.PI / 180;
+                    const radio = parseFloat(item.querySelector('[name="radio"]').value);
+                    centroX = radio * Math.cos(angulo) + canvas.width / 2;
+                    centroY = radio * Math.sin(angulo) + canvas.height / 2;
+                } else {
+                    centroX = parseFloat(item.querySelector('[name="centroX"]').value);
+                    centroY = parseFloat(item.querySelector('[name="centroY"]').value);
+                }
+
+                const lados = parseInt(item.querySelector('[name="lados"]').value) || 0;
+
+                ctx.fillStyle = color;
+                ctx.strokeStyle = bordeColor;
+
+                ctx.beginPath();
+                switch (tipoFigura) {
+                    case 'circulo':
+                        ctx.arc(centroX, centroY, tamano, 0, 2 * Math.PI);
+                        ctx.fill();
+                        ctx.stroke();
+                        break;
+                    case 'cuadrado':
+                        ctx.rect(centroX - tamano / 2, centroY - tamano / 2, tamano, tamano);
+                        ctx.fill();
+                        ctx.stroke();
+                        break;
+                    case 'triangulo':
+                        ctx.moveTo(centroX, centroY - tamano / 2);
+                        ctx.lineTo(centroX - tamano / 2, centroY + tamano / 2);
+                        ctx.lineTo(centroX + tamano / 2, centroY + tamano / 2);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+                        break;
+                    case 'poligono':
+                        if (lados >= 3) {
+                            const angulo = (2 * Math.PI) / lados;
+                            ctx.moveTo(
+                                centroX + tamano * Math.cos(0),
+                                centroY + tamano * Math.sin(0)
+                            );
+                            for (let i = 1; i < lados; i++) {
+                                ctx.lineTo(
+                                    centroX + tamano * Math.cos(i * angulo),
+                                    centroY + tamano * Math.sin(i * angulo)
+                                );
+                            }
+                            ctx.closePath();
+                            ctx.fill();
+                            ctx.stroke();
+                        }
+                        break;
+                }
+            });
+        }
+
+        // Inicialización de eventos
+        document.getElementById('nombreForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            guardarNombre();
+        });
+
+        // Evento para actualizar el formulario al seleccionar una figura o sistema de coordenadas
+        document.getElementById('figuraForm').addEventListener('change', function(event) {
+            const target = event.target;
+            if (target.matches('[name="figuraTipo"]') || target.matches('[name="coordenadas"]')) {
+                const figuraId = target.id.split('_')[0];
+                actualizarFormulario(figuraId);
+            }
+        });
+    </script>
+</body>
+</html>
