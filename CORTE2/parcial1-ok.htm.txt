@@ -1,0 +1,38 @@
+!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polígono Regular en Canvas</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <h1>Polígono Regular en Canvas</h1>
+    <form id="poligonoForm">
+        <label for="n">Número de lados (n):</label>
+        <input type="number" id="n" name="n" required min="3"><br>
+
+        <label for="a">Apotema (a):</label>
+        <input type="number" id="a" name="a"><br>
+
+        <label for="l">Lado (L):</label>
+        <input type="number" id="l" name="l"><br>
+
+        <label for="cx">Centro X:</label>
+        <input type="number" id="cx" name="cx" required><br>
+
+        <label for="cy">Centro Y:</label>
+        <input type="number" id="cy" name="cy" required><br>
+
+        <button type="submit">Dibujar Polígono</button>
+    </form>
+
+    <canvas id="canvas" width="600" height="600"></canvas>
+
+    <script src="app.js"></script>
+</body>
+</html>
