@@ -1,0 +1,118 @@
+// Clase Cartesiana para manejar coordenadas en el sistema cartesiano
+class Cartesiana {
+    #x;
+    #y;
+
+    constructor(x, y) {
+        this.#x = x;
+        this.#y = y;
+    }
+
+    get x() {
+        return this.#x;
+    }
+
+    set x(value) {
+        this.#x = value;
+    }
+
+    get y() {
+        return this.#y;
+    }
+
+    set y(value) {
+        this.#y = value;
+    }
+
+    // Método para convertir coordenadas cartesianas a polares
+    toPolar() {
+        const radio = Math.sqrt(this.#x ** 2 + this.#y ** 2);
+        const angulo = Math.atan2(this.#y, this.#x);
+        return new Polar(radio, angulo);
+    }
+}
+
+// Clase Polar para manejar coordenadas en el sistema polar
+class Polar {
+    #radio;
+    #angulo;
+
+    constructor(radio, angulo) {
+        this.#radio = radio;
+        this.#angulo = angulo;
+    }
+
+    get radio() {
+        return this.#radio;
+    }
+
+    set radio(value) {
+        this.#radio = value;
+    }
+
+    get angulo() {
+        return this.#angulo;
+    }
+
+    set angulo(value) {
+        this.#angulo = value;
+    }
+
+    // Método para convertir coordenadas polares a cartesianas
+    toCartesiana() {
+        const x = this.#radio * Math.cos(this.#angulo);
+        const y = this.#radio * Math.sin(this.#angulo);
+        return new Cartesiana(x, y);
+    }
+}
+
+function dibujarPoligono() {
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Obtener los valores ingresados por el usuario
+    const apotema = parseFloat(document.getElementById('apotema').value);
+    const lado = parseFloat(document.getElementById('lado').value);
+    const n = parseInt(document.getElementById('lados').value);
+    const xCentro = parseFloat(document.getElementById('x').value);
+    const yCentro = parseFloat(document.getElementById('y').value);
+
+    // Crear objeto de la clase Cartesiana para el centro
+    const centro = new Cartesiana(xCentro, yCentro);
+
+    // Limpiar el canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Validación básica de datos
+    if (n < 3 || isNaN(apotema) && isNaN(lado)) {
+        alert("Por favor, ingrese valores válidos.");
+        return;
+    }
+
+    // Calcular el radio usando el apotema o el lado, si ambos son proporcionados se prioriza el apotema
+    let radio;
+    if (!isNaN(apotema)) {
+        radio = apotema / Math.cos(Math.PI / n);
+    } else if (!isNaN(lado)) {
+        radio = lado / (2 * Math.sin(Math.PI / n));
+    }
+
+    // Dibujar el polígono
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+        const angle = (i * 2 * Math.PI / n) - Math.PI / 2; // Orientación recta hacia arriba
+        const x = centro.x + radio * Math.cos(angle);
+        const y = centro.y + radio * Math.sin(angle);
+
+        // Mostrar coordenadas en la consola
+        console.log(`Vértice ${i + 1}: (${x.toFixed(2)}, ${y.toFixed(2)})`);
+
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
+    }
+    ctx.closePath();
+    ctx.stroke();
+}
