@@ -3,17 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rasterización de Puntos Aleatorios</title>
+    <title>Rasterización y Generación de Polígonos</title>
     <style>
         svg {
             border: 1px solid black;
             background-color: #f0f0f0;
         }
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 16px;
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
-    <h1>Rasterización de Puntos Aleatorios</h1>
+    <h1>Rasterización y Generación de Polígonos</h1>
     <svg id="canvas" width="400" height="400"></svg>
+    <button id="regenerarPuntosButton">Regenerar Puntos</button> <!-- Botón para regenerar puntos -->
+    <button id="generarPoligonoButton">Generar Polígono</button> <!-- Botón para generar polígono -->
 
     <!-- Archivo JavaScript externo -->
     <script src="script.js"></script>

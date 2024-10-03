@@ -3,14 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rasterización y Vectorización de Puntos Aleatorios</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Archivo CSS para estilos -->
+    <title>Rasterización y Generación de Polígonos</title>
+    <style>
+        svg {
+            border: 1px solid black;
+            background-color: #f0f0f0;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Rasterización y Vectorización de Puntos Aleatorios</h1>
+    <h1>Rasterización y Generación de Polígonos</h1>
     <svg id="canvas" width="400" height="400"></svg>
-    <h2 id="tipoFigura">Tipo de Figura: </h2>
+    <button id="regenerarPuntosButton">Regenerar Puntos</button> <!-- Botón para regenerar puntos -->
+    <button id="generarPoligonoButton">Generar Polígono</button> <!-- Botón para generar polígono -->
 
-    <script src="script.js"></script> <!-- Archivo JavaScript -->
+    <script src="puntos.js"></script> <!-- Incluye la lógica de puntos -->
 </body>
 </html>
+

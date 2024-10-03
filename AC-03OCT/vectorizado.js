@@ -17,20 +17,16 @@ class Punto {
     }
 }
 
-// Clase Figura para manejar una lista de puntos y dibujar los puntos en el canvas
+// Clase Figura para manejar una lista de puntos y dibujar en el canvas
 class Figura {
     constructor(puntos = []) {
         this.puntos = puntos;
     }
 
-    // Función para agregar un nuevo punto a la figura
-    agregarPunto(punto) {
-        this.puntos.push(punto);
-    }
-
     // Función para dibujar los puntos como círculos (rasterización)
     dibujarPuntos(svgElement) {
         const namespace = "http://www.w3.org/2000/svg";
+        svgElement.innerHTML = ''; // Limpiar el SVG antes de redibujar
         for (let i = 0; i < this.puntos.length; i++) {
             let circle = document.createElementNS(namespace, "circle");
             circle.setAttribute("cx", this.puntos[i].x);
@@ -41,48 +37,35 @@ class Figura {
         }
     }
 
-    // Función para dibujar líneas conectando los puntos (vectorización)
-    dibujarPoligono(svgElement) {
+    // Función para dibujar el centroide
+    dibujarCentroide(svgElement) {
+        const centroide = this.calcularCentroide();
         const namespace = "http://www.w3.org/2000/svg";
-        let pointsString = this.puntos.map(punto => `${punto.x},${punto.y}`).join(" ");
-        let polygon = document.createElementNS(namespace, "polygon");
-        polygon.setAttribute("points", pointsString);
-        polygon.setAttribute("fill", "none");
-        polygon.setAttribute("stroke", "blue");
-        polygon.setAttribute("stroke-width", 2);
-        svgElement.appendChild(polygon);
+        let circle = document.createElementNS(namespace, "circle");
+        circle.setAttribute("cx", centroide.x);
+        circle.setAttribute("cy", centroide.y);
+        circle.setAttribute("r", 5);
+        circle.setAttribute("fill", "blue");
+        svgElement.appendChild(circle);
     }
 
-    // Función para determinar si el polígono es convexa o cóncava
-    esConvexa() {
-        let sign = 0;
-        const puntos = this.puntos.length;
-        
-        for (let i = 0; i < puntos; i++) {
-            const p1 = this.puntos[i];
-            const p2 = this.puntos[(i + 1) % puntos];
-            const p3 = this.puntos[(i + 2) % puntos];
-
-            const crossProduct = (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
-
-            if (crossProduct < 0) {
-                sign = -1;
-            } else if (crossProduct > 0) {
-                if (sign === 0) sign = 1;
-                else if (sign === -1) return false;
-            }
-        }
-        return true;
+    // Función para calcular el centroide del polígono
+    calcularCentroide() {
+        let centroideX = 0;
+        let centroideY = 0;
+        this.puntos.forEach(p => {
+            centroideX += p.x;
+            centroideY += p.y;
+        });
+        centroideX /= this.puntos.length;
+        centroideY /= this.puntos.length;
+        return new Punto(centroideX, centroideY);
     }
 
-    // Función para dibujar los puntos y el polígono
+    // Función para dibujar la figura completa
     render(svgElement) {
         this.dibujarPuntos(svgElement);   // Dibuja los puntos
-        this.dibujarPoligono(svgElement);  // Dibuja el polígono que conecta los puntos
-        
-        // Determina si la figura es convexa o cóncava
-        const tipoFigura = this.esConvexa() ? "Convexa" : "Cóncava";
-        document.getElementById('tipoFigura').innerText = `Tipo de Figura: ${tipoFigura}`;
+        this.dibujarCentroide(svgElement); // Dibuja el centroide
     }
 }
 
@@ -97,13 +80,45 @@ function generarPuntosAleatorios(numPuntos, ancho, alto) {
     return puntosAleatorios;
 }
 
+// Función para calcular el centroide de un conjunto de puntos
+function calcularCentroide(puntos) {
+    let centroideX = 0;
+    let centroideY = 0;
+    puntos.forEach(p => {
+        centroideX += p.x;
+        centroideY += p.y;
+    });
+    centroideX /= puntos.length;
+    centroideY /= puntos.length;
+    return new Punto(centroideX, centroideY);
+}
+
+// Función para ordenar los puntos en sentido antihorario
+function ordenarPuntos(puntos) {
+    const centroide = calcularCentroide(puntos);
+    puntos.sort((a, b) => {
+        return Math.atan2(a.y - centroide.y, a.x - centroide.x) - Math.atan2(b.y - centroide.y, b.x - centroide.x);
+    });
+}
+
 // Crear el canvas
 const svgCanvas = document.getElementById('canvas');
 
 // Generar una figura con puntos aleatorios
 const anchoCanvas = 400;
 const altoCanvas = 400;
-let figura = new Figura(generarPuntosAleatorios(10, anchoCanvas, altoCanvas));
+let figura = new Figura();
 
-// Dibujar los puntos y el polígono en el canvas SVG (rasterización y vectorización)
-figura.render(svgCanvas);
+// Evento para regenerar un nuevo conjunto de puntos al hacer clic en el botón
+document.getElementById('regenerarPuntosButton').addEventListener('click', () => {
+    figura = new Figura(generarPuntosAleatorios(10, anchoCanvas, altoCanvas));
+    figura.render(svgCanvas);
+});
+
+// Evento para generar un polígono al hacer clic en el botón
+document.getElementById('generarPoligonoButton').addEventListener('click', () => {
+    let puntosAleatorios = generarPuntosAleatorios(5, anchoCanvas, altoCanvas); // Generar 5 puntos para el polígono
+    ordenarPuntos(puntosAleatorios); // Ordenar los puntos
+    figura = new Figura(puntosAleatorios);
+    figura.render(svgCanvas);
+});
